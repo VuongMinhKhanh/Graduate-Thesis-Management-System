@@ -6,10 +6,17 @@ from enum import Enum
 
 
 class BaseModel(models.Model):
-    created_date = models.DateTimeField(auto_created=True)
-    updated_date = models.DateTimeField(auto_now=True)
+    created_date = models.DateTimeField(auto_now_add=True,null=True)
+    updated_date = models.DateTimeField(auto_now=True,null=True)
     class Meta:
         abstract = True
+
+
+class TrangThai(models.Model):
+    trang_thai = models.BooleanField(default=True)
+    class Meta:
+        abstract = True
+
 
 
 class NguoiDung(AbstractUser):
@@ -36,17 +43,15 @@ class SinhVien(BaseModel):
     lop = models.ForeignKey('Lop', on_delete=models.PROTECT, null=False)
 
 
-class Lop(BaseModel):
+class Lop(BaseModel,TrangThai):
     ten_lop = models.CharField(max_length=100)
     si_so = models.IntegerField()
-    tinh_trang_lop = models.CharField(max_length=50)
 
 
-class NghanhHoc(models.Model):
+class NghanhHoc(BaseModel,TrangThai):
     # Thông tin về ngành học
     ten_nganh = models.CharField(max_length=100)
     so_tin_chi = models.IntegerField()
-    tinh_trang = models.CharField(max_length=50)
 
 
 class LopHocNghanhHoc(BaseModel):
@@ -70,13 +75,12 @@ class KLTNGVHuongDan(BaseModel):
 class TieuChi(BaseModel):
     tieu_chi = models.CharField(max_length=200)
     ty_le = models.FloatField()
-    id_kltn = models.ManyToManyField(KhoaLuanTotNghiep, null=True, blank=True)
+    id_kltn = models.ManyToManyField(KhoaLuanTotNghiep, blank=True)
 
 
-class HoiDongBVKL(BaseModel):
+class HoiDongBVKL(BaseModel,TrangThai):
     # Thông tin về Hội đồng bảo vệ khóa luận
     ngay_bao_ve = models.DateField()
-    tinh_trang = models.CharField(max_length=50)
 
 
 class Diem(BaseModel):
