@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from graduatethesis.models import (NguoiDung,SinhVien,GiaoVu,GiangVien,HoiDongBVKL,KhoaLuanTotNghiep,NghanhHoc
-,KLTNGVHuongDan,Lop,LopHocNghanhHoc,TieuChi,Diem,VaiTro)
+from graduatethesis.models import *
 
 class NguoiDungSerializer(serializers.ModelSerializer):
     class Meta:

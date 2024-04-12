@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+MEDIA_ROOT= '%s/graduatethesis/static/' % BASE_DIR
 
 # Application definition
 
@@ -38,9 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'graduatethesis.apps.GraduatethesisConfig',
-
+    'rest_framework'
 ]
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

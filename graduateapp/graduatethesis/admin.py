@@ -1,25 +1,51 @@
 from django.contrib import admin
-from graduatethesis.models import (NguoiDung,SinhVien,GiaoVu,GiangVien,HoiDongBVKL,KhoaLuanTotNghiep,NghanhHoc
-,KLTNGVHuongDan,Lop,LopHocNghanhHoc,TieuChi,Diem,VaiTro)
+from graduatethesis.models import *
 from django.utils.html import mark_safe
-
-# from graduatethesis.models import
-
-from django import forms
-from ckeditor_uploader.widgets import CKEditorUploadingWidget
+from django.urls import path
 # Register your models here.
-admin.site.register(NguoiDung)
-admin.site.register(SinhVien)
-admin.site.register(GiaoVu)
-admin.site.register(GiangVien)
-admin.site.register(KhoaLuanTotNghiep)
-admin.site.register(HoiDongBVKL)
-admin.site.register(Lop)
-admin.site.register(KLTNGVHuongDan)
-admin.site.register(LopHocNghanhHoc)
-admin.site.register(TieuChi)
-admin.site.register(Diem)
-admin.site.register(VaiTro)
+class TieuChiInlineAdmin(admin.StackedInline):
+    model = TieuChi.id_kltn.through
+
+
+class ThesisAppAdminSite(admin.AdminSite):
+    site_header = "Quản trị người dùng"
+
+    def get_urls(self):
+        return [
+                path('user/',self.stats_view)
+        ]+ super().get_urls()
+
+    def stats_view(self):
+        pass
+
+admin_site = ThesisAppAdminSite(name='gt_ts')
+
+
+class NguoiDungAdmin(admin.ModelAdmin):
+    def avatar(self,nguoidung):
+        if nguoidung:
+            return mark_safe(
+                '<img src= "/static/{url}" width="120"/>'.format(url=nguoidung.avatar.name)
+            )
+
+class KhoaLuanTotNghiepAdmin(admin.ModelAdmin):
+    inlines = [TieuChiInlineAdmin,]
+
+
+admin_site.register(NguoiDung,NguoiDungAdmin)
+admin_site.register(SinhVien)
+admin_site.register(GiaoVu)
+admin_site.register(GiangVien)
+admin_site.register(KhoaLuanTotNghiep,KhoaLuanTotNghiepAdmin)
+admin_site.register(HoiDongBVKL)
+admin_site.register(Lop)
+admin_site.register(KLTNGVHuongDan)
+admin_site.register(LopHocNghanhHoc)
+admin_site.register(TieuChi)
+admin_site.register(Diem)
+admin_site.register(VaiTro)
+admin_site.register(NghanhHoc)
+
 
 
 
