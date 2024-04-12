@@ -54,7 +54,7 @@ class Lop(BaseModel,TrangThai):
         return self.ten_lop
 
 
-class NghanhHoc(BaseModel,TrangThai):
+class NganhHoc(BaseModel,TrangThai):
     # Thông tin về ngành học
     ten_nganh = models.CharField(max_length=100)
     so_tin_chi = models.IntegerField()
@@ -62,9 +62,9 @@ class NghanhHoc(BaseModel,TrangThai):
     def __str__(self):
         return self.ten_nganh
 
-class LopHocNghanhHoc(BaseModel):
+class LopHocNganhHoc(BaseModel):
     lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
-    nghanh_hoc = models.ForeignKey(NghanhHoc, on_delete=models.CASCADE)
+    nganh_hoc = models.ForeignKey(NganhHoc, on_delete=models.CASCADE)
 
 
 class KhoaLuanTotNghiep(BaseModel):
