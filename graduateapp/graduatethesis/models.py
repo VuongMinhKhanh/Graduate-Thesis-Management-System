@@ -113,10 +113,10 @@ class HoiDongBVKL(BaseModel, TrangThai):
 
 class Diem(BaseModel):
     # Điểm của từng tiêu chí của khóa luận
-    tieu_chi = models.CharField(max_length=200)
+    tieu_chi = models.ForeignKey(TieuChi, on_delete=models.PROTECT, default=1)
     diem = models.FloatField()
     gv = models.ForeignKey(GiangVien, on_delete=models.CASCADE)
-    kltn = models.ForeignKey(KhoaLuanTotNghiep ,on_delete=models.CASCADE)
+    kltn = models.ForeignKey(KhoaLuanTotNghiep, on_delete=models.CASCADE)
 
     class Meta:
         unique_together=('tieu_chi','gv','kltn')
