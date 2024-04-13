@@ -27,10 +27,18 @@ class NguoiDung(AbstractUser):
 
 
 class GiaoVu(NguoiDung):
+    class Meta:
+        verbose_name = "Giáo Vụ"
+        verbose_name_plural = verbose_name
+
     trinh_do = models.CharField(max_length=100)
 
 
 class GiangVien(NguoiDung):
+    class Meta:
+        verbose_name = "Giảng Viên"
+        verbose_name_plural = verbose_name
+
     bang_cap = models.CharField(max_length=100)
     kinh_nghiem = models.CharField(max_length=255)
 
@@ -39,6 +47,10 @@ class GiangVien(NguoiDung):
 
 
 class SinhVien(NguoiDung):
+    class Meta:
+        verbose_name = "Sinh Viên"
+        verbose_name_plural = verbose_name
+
     mssv = models.CharField(primary_key=True,max_length=20, unique=True)
     nam_nhap_hoc = models.IntegerField()
     lop = models.ForeignKey('Lop', on_delete=models.PROTECT, null=False)
