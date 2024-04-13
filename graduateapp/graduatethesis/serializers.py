@@ -69,9 +69,3 @@ class DiemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Diem
         fields = '__all__'
-
-
-class VaiTroSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = VaiTro
-        fields = '__all__'

@@ -4,7 +4,7 @@ from django.utils.html import mark_safe
 from django.urls import path
 # Register your models here.
 class TieuChiInlineAdmin(admin.StackedInline):
-    model = TieuChi.id_kltn.through
+    model = TieuChi.kltn.through
 
 
 class ThesisAppAdminSite(admin.AdminSite):
@@ -43,7 +43,6 @@ admin_site.register(KLTNGVHuongDan)
 admin_site.register(LopHocNghanhHoc)
 admin_site.register(TieuChi)
 admin_site.register(Diem)
-admin_site.register(VaiTro)
 admin_site.register(NghanhHoc)
 
 
