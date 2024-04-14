@@ -49,7 +49,7 @@ class NghanhHocSerializer(serializers.ModelSerializer):
 
 class LopHocNghanhHocSerializer(serializers.ModelSerializer):
     class Meta:
-        model = LopHocNghanhHoc
+        model = LopHocNganhHoc
         fields = '__all__'
 
 
