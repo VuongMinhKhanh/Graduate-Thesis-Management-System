@@ -67,7 +67,7 @@ class Lop(TrangThai):
         return self.ten_lop
 
 
-class NghanhHoc(TrangThai):
+class NganhHoc(TrangThai):
     # Thông tin về ngành học
     ten_nganh = models.CharField(max_length=100)
     so_tin_chi = models.IntegerField()
@@ -78,7 +78,7 @@ class NghanhHoc(TrangThai):
 
 class LopHocNganhHoc(BaseModel):
     lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
-    nganh_hoc = models.ForeignKey(NghanhHoc, on_delete=models.CASCADE)
+    nganh_hoc = models.ForeignKey(NganhHoc, on_delete=models.CASCADE)
 
 
 class KhoaLuanTotNghiep(TrangThai):
@@ -94,7 +94,7 @@ class KhoaLuanTotNghiep(TrangThai):
 
 class KLTNGVHuongDan(BaseModel):
     kltn = models.ForeignKey(KhoaLuanTotNghiep, on_delete=models.CASCADE)
-    gv_huong_dan = models.ForeignKey(GiangVien, on_delete=models.CASCADE)
+    gv_huong_dan = models.ManyToManyField(GiangVien, blank=True, default=1)
 
 
 class TieuChi(BaseModel):
