@@ -32,7 +32,7 @@ class GiaoVu(NguoiDung):
         #đặt lại tên hiển thị ra trang admin
         verbose_name_plural = ('Giáo Vụ')
     def __str__(self):
-        return (self.first_name+self.last_name)
+        return self.first_name+self.last_name
 
 
 class GiangVien(NguoiDung):
@@ -56,12 +56,13 @@ class SinhVien(NguoiDung):
     lop = models.ForeignKey('Lop', on_delete=models.PROTECT, null=False)
 
     def __str__(self):
-        return (self.first_name + self.last_name)
+        return self.first_name + " " + self.last_name
 
 
 class Lop(TrangThai):
     ten_lop = models.CharField(max_length=100)
     si_so = models.IntegerField()
+    nganh = models.ForeignKey("NganhHoc", on_delete=models.PROTECT, default=1)
 
     def __str__(self):
         return self.ten_lop
@@ -70,15 +71,15 @@ class Lop(TrangThai):
 class NganhHoc(TrangThai):
     # Thông tin về ngành học
     ten_nganh = models.CharField(max_length=100)
-    so_tin_chi = models.IntegerField()
+    # so_tin_chi = models.IntegerField()
 
     def __str__(self):
         return self.ten_nganh
 
-
-class LopHocNganhHoc(BaseModel):
-    lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
-    nganh_hoc = models.ForeignKey(NganhHoc, on_delete=models.CASCADE)
+#
+# class LopHocNganhHoc(BaseModel):
+#     lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
+#     nganh_hoc = models.ForeignKey(NganhHoc, on_delete=models.CASCADE)
 
 
 class KhoaLuanTotNghiep(TrangThai):
@@ -86,23 +87,27 @@ class KhoaLuanTotNghiep(TrangThai):
     ty_le_dao_van = models.FloatField()
     diem_tong = models.FloatField()
     mssv = models.ForeignKey(SinhVien, on_delete=models.CASCADE)
+    # tieu_chis = models.ManyToManyField("TieuChi", related_name='kltns')
+
     class Meta:
         unique_together=('id','mssv')
+
     def __str__(self):
         return self.ten_khoa_luan
 
 
 class KLTNGVHuongDan(BaseModel):
     kltn = models.ForeignKey(KhoaLuanTotNghiep, on_delete=models.CASCADE)
-    gv_huong_dan = models.ManyToManyField(GiangVien, blank=True, default=1)
+    gv_huong_dan = models.ManyToManyField(GiangVien, blank=True)
 
 
 class TieuChi(BaseModel):
     tieu_chi = models.CharField(max_length=200)
     ty_le = models.FloatField()
-    kltn = models.ManyToManyField(KhoaLuanTotNghiep,blank=True)
+    kltn = models.ManyToManyField(KhoaLuanTotNghiep, blank=True, related_name="tieu_chi")
+
     def __str__(self):
-        return self.tieu_chi
+        return f"{self.tieu_chi} + {self.ty_le}"
 
 
 class HoiDongBVKL(TrangThai):
@@ -116,13 +121,12 @@ class HoiDongBVKL(TrangThai):
 
 class Diem(BaseModel):
     # Điểm của từng tiêu chí của khóa luận
-    tieu_chi = models.CharField(max_length=100)
+    tieu_chi = models.ForeignKey(TieuChi, on_delete=models.CASCADE, default=1)
     diem = models.FloatField()
     gv = models.ForeignKey(GiangVien, on_delete=models.CASCADE)
     kltn = models.ForeignKey(KhoaLuanTotNghiep, on_delete=models.CASCADE)
 
     class Meta:
         unique_together=('tieu_chi','gv','kltn')
-
 
 
