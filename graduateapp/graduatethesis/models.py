@@ -85,7 +85,7 @@ class NganhHoc(TrangThai):
 class KhoaLuanTotNghiep(TrangThai):
     ten_khoa_luan = models.CharField(max_length=200)
     ty_le_dao_van = models.FloatField()
-    diem_tong = models.FloatField(blank=True)
+    diem_tong = models.FloatField(null=True, blank=True)
     mssv = models.ForeignKey(SinhVien, on_delete=models.CASCADE)
     # tieu_chis = models.ManyToManyField("TieuChi", related_name='kltns')
 
