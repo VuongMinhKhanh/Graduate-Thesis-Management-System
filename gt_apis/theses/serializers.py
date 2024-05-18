@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
 from theses.models import NguoiDung, KhoaLuanTotNghiep, HoiDongBVKL, SinhVien, GiangVien, KLTNGVHuongDan, Diem, TieuChi, \
-    GiaoVu, Lop
+    GiaoVu, Lop, NganhHoc
 
 
 class NguoiDungSerializer(serializers.ModelSerializer):
@@ -82,6 +82,12 @@ class HDBVKLSerializer(ModelSerializer):
         fields = ["giang_viens"]
 
 
+class NganhHocSerializer(ModelSerializer):
+    class Meta:
+        model = NganhHoc
+        fields = ['id', 'ten_nganh', 'created_date']
+
+
 class GVHuongDanSerializer(ModelSerializer):
     gv_huong_dan = GiangVienSerializer(many=True)
 
@@ -92,8 +98,6 @@ class GVHuongDanSerializer(ModelSerializer):
 
 class KLTNSerializer(ModelSerializer):
     mssv = SinhVienSerializer()
-    # hoidongbvkl_set = HDBVKLSerializer(many=True)
-    gv_huong_dan = serializers.SerializerMethodField() # what???
 
     class Meta:
         model = KhoaLuanTotNghiep
@@ -101,22 +105,24 @@ class KLTNSerializer(ModelSerializer):
             'id',
             'ten_khoa_luan',
             'ty_le_dao_van',
+            'created_date',
             'diem_tong',
             'trang_thai',
             'mssv',
-            # 'gv_phan_bien',
-            'gv_huong_dan'
-            # "hoi_dongs",  # include our custom field
         ]
 
-    def get_hoi_dong_bvkl(self, obj):
-        # Make sure this method is defined properly
-        hoi_dongs = HoiDongBVKL.objects.filter(kltns=obj)
-        return HDBVKLSerializer(hoi_dongs, many=True).data
+
+class KLTNDetailsSerializer(KLTNSerializer):
+    # hoidongbvkl_set = HDBVKLSerializer(many=True)
+    gv_huong_dan = serializers.SerializerMethodField() # what???
+
+    class Meta:
+        model = KhoaLuanTotNghiep
+        fields = KLTNSerializer.Meta.fields + ['gv_huong_dan'] # dupe key nest
+            # 'gv_phan_bien',
 
     def get_gv_huong_dan(self, obj):
         gv_huong_dan = KLTNGVHuongDan.objects.filter(kltn=obj)
-
         return GVHuongDanSerializer(gv_huong_dan, many=True).data
 
 

@@ -62,6 +62,7 @@ class SinhVien(NguoiDung):
 class Lop(TrangThai):
     ten_lop = models.CharField(max_length=100)
     si_so = models.IntegerField()
+    nganh = models.ForeignKey("NganhHoc", on_delete=models.PROTECT, default=1)
 
     def __str__(self):
         return self.ten_lop
@@ -70,21 +71,21 @@ class Lop(TrangThai):
 class NganhHoc(TrangThai):
     # Thông tin về ngành học
     ten_nganh = models.CharField(max_length=100)
-    so_tin_chi = models.IntegerField()
+    # so_tin_chi = models.IntegerField()
 
     def __str__(self):
         return self.ten_nganh
 
-
-class LopHocNganhHoc(BaseModel):
-    lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
-    nganh_hoc = models.ForeignKey(NganhHoc, on_delete=models.CASCADE)
+#
+# class LopHocNganhHoc(BaseModel):
+#     lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
+#     nganh_hoc = models.ForeignKey(NganhHoc, on_delete=models.CASCADE)
 
 
 class KhoaLuanTotNghiep(TrangThai):
     ten_khoa_luan = models.CharField(max_length=200)
     ty_le_dao_van = models.FloatField()
-    diem_tong = models.FloatField()
+    diem_tong = models.FloatField(null=True, blank=True)
     mssv = models.ForeignKey(SinhVien, on_delete=models.CASCADE)
     # tieu_chis = models.ManyToManyField("TieuChi", related_name='kltns')
 

@@ -24,23 +24,24 @@ SECRET_KEY = 'django-insecure-puefaojq+qauej!=cu%q1w1n%3o42*dvzv1c!*a-ez@@7f%pby
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["192.168.0.100", "192.168.0.105", "192.168.1.13"]
 
 # Application definition
 
 INSTALLED_APPS = [
+    # 'theses',
+    'theses.apps.CoursesConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'theses.apps.CoursesConfig',
     'ckeditor',
     'ckeditor_uploader',
     'rest_framework',
     'drf_yasg',
-    'oauth2_provider'
+    'oauth2_provider',
 ]
 
 AUTH_USER_MODEL = 'theses.NguoiDung'

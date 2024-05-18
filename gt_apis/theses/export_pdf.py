@@ -2,6 +2,9 @@ import datetime
 import io
 import os
 from collections import defaultdict
+
+from django.conf import settings
+from django.core.mail import EmailMessage
 from django.http import FileResponse
 from reportlab.lib import colors, styles
 from reportlab.lib.pagesizes import letter
@@ -12,9 +15,12 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
 
 
-def some_view(data):
+def export_pdf(data, thesis_name, email=""):
     # Create a file-like buffer to receive PDF data.
     buffer = io.BytesIO()
+
+    filename = f"{thesis_name}_thesis_evaluation_report.pdf"
+
     # Register a TTF Font that supports Vietnamese characters
     pdfmetrics.registerFont(TTFont('DejaVuSans', 'theses/static/fonts/DejaVuSans.ttf'))
 
@@ -109,10 +115,27 @@ def some_view(data):
     # Build the document
     doc.build(elements)
 
-    with open('theses/static/pdf/graduate_thesis_report.pdf', 'wb') as f:
+    with open(f'theses/static/pdf/{filename}', 'wb') as f:
         f.write(buffer.getvalue())
+
+    # Save PDF to a file and/or send by email
+    if email:
+        # Send an email
+        email_subject = 'Thesis Evaluation Report'
+        email_body = f'Please find attached the evaluation report for: {thesis_name}.'
+        email = EmailMessage(
+            email_subject,
+            email_body,
+            settings.EMAIL_HOST_USER,  # Specify the sender email here
+            [email],
+            [],
+            # reply_to=['other@example.com'],
+            # headers={'Message-ID': 'foo'},
+        )
+        email.attach_file(f'theses/static/pdf/{filename}')
+        email.send()
 
     buffer.seek(0)
     # FileResponse sets the Content-Disposition header so that browsers
     # present the option to save the file.
-    return FileResponse(buffer, as_attachment=True, filename="graduate_thesis_report.pdf")
+    return FileResponse(buffer, as_attachment=True, filename=filename)

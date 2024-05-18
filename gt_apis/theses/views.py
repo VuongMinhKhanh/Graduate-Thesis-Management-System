@@ -1,15 +1,15 @@
 import requests
-from django.db.models import Avg, Count, Q
-from django.db.models.functions import ExtractYear
+from django.db.models import Avg, Count, Q, Sum, F, FloatField
+from django.db.models.functions import ExtractYear, Round, Cast
 from rest_framework import viewsets, generics, status, permissions
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
-from theses.export_pdf import some_view
-from theses.models import KhoaLuanTotNghiep, HoiDongBVKL, NguoiDung, Diem, SinhVien, GiangVien, GiaoVu
+from theses.export_pdf import export_pdf
+from theses.models import KhoaLuanTotNghiep, HoiDongBVKL, NguoiDung, Diem, SinhVien, GiangVien, GiaoVu, NganhHoc
 from theses.serializers import KLTNSerializer, HDBVKLSerializer, NguoiDungSerializer, DiemSerializer, \
-    SinhVienSerializer, GiaoVuSerializer, GiangVienSerializer
+    SinhVienSerializer, GiaoVuSerializer, GiangVienSerializer, NganhHocSerializer, KLTNDetailsSerializer
 from theses import serializers, pagination, my_permission, send_mail
 
 
@@ -108,7 +108,7 @@ class GiaoVuViewSet(viewsets.ViewSet, generics.CreateAPIView):
 class KLTNViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView):
     queryset = KhoaLuanTotNghiep.objects.all()  # filter(trang_thai=True)
     serializer_class = KLTNSerializer
-    permission_classes = [my_permission.KLTNPermissionUser]
+    # permission_classes = [my_permission.KLTNPermissionUser]
 
     @action(methods=["patch"], detail=True)
     def change_thesis_status(self, request, *args, **kwargs):
@@ -122,22 +122,21 @@ class KLTNViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView
             kltn.trang_thai = new_status
 
             if not new_status:
-                auth_header = request.headers.get('Authorization')
-                token = auth_header.split(' ')[1] if auth_header else None
-                headers = {'Authorization': f'Bearer {token}'}
+                # auth_header = request.headers.get('Authorization')
+                # token = auth_header.split(' ')[1] if auth_header else None
+                # headers = {'Authorization': f'Bearer {token}'}
 
-                scores_api = requests.get(f'http://127.0.0.1:8000/Diem/{kwargs.get("pk")}/get_avg_score/', headers=headers)
+                # scores_api = requests.get(f'{settings.BASE_URL}/Diem/{kwargs.get("pk")}/get_avg_score/', headers=headers)
 
-                kltn.diem_tong = scores_api.json().get("avg_score")
+                kltn.diem_tong = calculate_average_score(kwargs.get("pk")) # scores_api.json().get("avg_score")
                 kltn.save()
 
                 data = self.get_serializer(kltn).data
-                # send_mail.send_mail_for_thesis(data)
+                send_mail.send_mail_for_thesis(data)
                 # print(some_view(data))
 
                 return Response({
                     "data": data,
-                    "external api response": scores_api.json()
                 })
 
             kltn.save()
@@ -149,40 +148,58 @@ class KLTNViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView
 
     @action(methods=["get"], url_path="avg_score", detail=False)
     def get_avg_score(self, request):
-        queryset = self.queryset
+        year = request.GET.get('year', None)
+        years = KhoaLuanTotNghiep.objects.values_list("created_date__year", flat=True).distinct()
 
-        year = self.request.query_params.get("year")
+        average_scores = (KhoaLuanTotNghiep.objects
+                          .filter(diem_tong__isnull=False)
+                          .values("id", "ten_khoa_luan", "diem_tong", "created_date"))
+
         if year:
-            queryset = queryset.filter(created_date__year=year)
+            average_scores = average_scores.filter(created_date__year=year)
+            context = {
+                "average_scores": average_scores,
+                "years": years,
+                "request_year": int(year),
+            }
+        else:
+            context = {
+                "average_scores": average_scores,
+                "years": years,
+                "request_year": None,
+            }
 
-        faculty = self.request.query_params.get("fac")
-        if faculty:
-            queryset = queryset.filter(sinh_vien__nganh=faculty)
-
-        avg_score = queryset.aggregate(Avg("diem"))
-
-        return Response({"avg_score": avg_score["diem__avg"]})
+            return Response(context)
+        # queryset = self.queryset
+        #
+        # year = self.request.query_params.get("year")
+        # if year:
+        #     queryset = queryset.filter(created_date__year=year)
+        #
+        # faculty = self.request.query_params.get("fac")
+        # if faculty:
+        #     queryset = queryset.filter(sinh_vien__nganh=faculty)
+        #
+        # avg_score = queryset.aggregate(Avg("diem"))
+        #
+        # return Response({"avg_score": avg_score["diem__avg"]})
 
     @action(methods=["get"], url_path="frequency", detail=False)
     def get_frequency(self, request):
-        queryset = self.queryset
+        faculties = NganhHoc.objects.all()
 
-        year = self.request.query_params.get("year")
-        if year:
-            queryset = queryset.filter(created_date__year=year)
+        freq_stats = (NganhHoc.objects.annotate(
+            freq=Count("lop__sinhvien__khoaluantotnghiep"),
+        ).values("id", "ten_nganh", "created_date", "freq"))
 
-        faculty = self.request.query_params.get("fac")
-        if faculty:
-            queryset = queryset.filter(sinh_vien__nganh=faculty)  # getting id or name ???
+        faculties_serialized = NganhHocSerializer(faculties, many=True).data
 
-        freq = queryset.aggregate(Count("id"))
+        context = {
+            "freq_stats": freq_stats,
+            "faculties": faculties_serialized,
+        }
 
-        return Response({"frequency": freq["id__count"],
-                         "user": serializers.NguoiDungSerializer(request.user).data,
-                         "group": request.user.groups.all().values_list('name', flat=True),
-                         "valid": request.user.groups.all().values_list('name', flat=True)
-                        .filter(Q(name="giáo vụ") | Q(name="sinh viên")).exists()
-                         })
+        return Response(context)
 
 
 class HDBVKLViewSet(viewsets.ViewSet, generics.UpdateAPIView):
@@ -206,25 +223,68 @@ class HDBVKLViewSet(viewsets.ViewSet, generics.UpdateAPIView):
 class DiemViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = Diem.objects.all()
     serializer_class = DiemSerializer
-    permission_classes = [my_permission.KLTNPermissionUser]
+    # permission_classes = [my_permission.KLTNPermissionUser]
 
     @action(methods=["get"], detail=True)
     def get_thesis_scores(self, request, **kwargs):
         queryset = Diem.objects.filter(kltn=kwargs.get("pk"))
         data = self.get_serializer(queryset, many=True).data
-        some_view(data)
 
         return Response(data)
 
     @action(methods=["get"], detail=True)
-    def get_avg_score(self, request, **kwargs):
-        avg_score = self.queryset.aggregate(Avg("diem"))
+    def export_pdf(self, request, **kwargs):
+        queryset = Diem.objects.filter(kltn=kwargs.get("pk"))
+        thesis_name = KhoaLuanTotNghiep.objects.filter(id=kwargs.get("pk")).first().ten_khoa_luan
+        data = self.get_serializer(queryset, many=True).data
+        if request.user.is_authenticated:
+            export_pdf(data, thesis_name, request.user.email)
+        else:
+            export_pdf(data, thesis_name, "2151050191khanh@ou.edu.vn")
 
-        return Response({
-            "avg_score": avg_score["diem__avg"]
-        })
+        return Response(f"Export successfully to {request.user.email if request.user.is_authenticated else request.user}!", status.HTTP_200_OK)
+
+    # @action(methods=["get"], detail=True)
+    # def get_avg_score(self, request, **kwargs):
+    #     # queryset = Diem.objects.filter(kltn=kwargs.get("pk"))
+    #     # avg_score = queryset.aggregate(Avg("diem"))
+    #
+    #     average_scores = (KhoaLuanTotNghiep.objects.filter(id=kwargs.get("pk"))
+    #                       .annotate(
+    #         average_score=Round(
+    #             Sum(Cast(F('diem__diem') * F('diem__tieu_chi__ty_le') / 100, FloatField())) / Count('diem__gv',
+    #                                                                                                 distinct=True), 2)
+    #     ).values("average_score"))
+    #     # print(average_scores)
+    #     return Response({
+    #         "avg_score": average_scores[0]["average_score"]
+    #     })
 
     # @action(methods=["patch"], detail=True)
     # def change_thesis_score(self, request, **kwargs):
     #     # request: diem, tieu chi, lec
     #     diem = self.get_object(kltn=kwargs.get("pk"))
+
+
+def calculate_average_score(pk):
+    average_scores = (KhoaLuanTotNghiep.objects.filter(id=pk)
+                      .annotate(
+        average_score=Round(
+            Sum(Cast(F('diem__diem') * F('diem__tieu_chi__ty_le') / 100, FloatField())) / Count('diem__gv',
+                                                                                                distinct=True), 2)
+    ).values("average_score"))
+    # print(average_scores)
+    return average_scores[0]["average_score"]
+
+
+class KLTNDetailsViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = KhoaLuanTotNghiep.objects.all()
+    serializer_class = KLTNDetailsSerializer
+    # permission_classes = [my_permission.KLTNPermissionUser]
+
+    @action(methods=["get"], detail=True)
+    def get_thesis_details(self, request, **kwargs):
+        queryset = KhoaLuanTotNghiep.objects.filter(id=kwargs.get("pk")).first()
+        data = self.get_serializer(queryset).data
+
+        return Response(data)
