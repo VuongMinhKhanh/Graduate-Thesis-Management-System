@@ -8,6 +8,7 @@ def send_mail_for_thesis(data):
     thesis_name = data["ten_khoa_luan"]
     score = data["diem_tong"]
     plagiarism = data["ty_le_dao_van"]
+    email = data["mssv"]["email"]
     message = (f"Title of Thesis: {thesis_name}\n"
                f"Percentage of plagiarism: {plagiarism}%\n"
                f"Total Score: {score}/10")
@@ -15,7 +16,7 @@ def send_mail_for_thesis(data):
         subject,
         message,
         settings.EMAIL_HOST_USER,
-        ["vuongminhkhanh29@gmail.com", ]
+        [email, ]
     )
 
 # Subject: Notification of Thesis Evaluation Result - [Student's Full Name]
