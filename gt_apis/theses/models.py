@@ -44,7 +44,7 @@ class GiangVien(NguoiDung):
     kinh_nghiem = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.username
+        return f"{self.pk}-{self.username}"
 
 
 class SinhVien(NguoiDung):
@@ -86,11 +86,9 @@ class KhoaLuanTotNghiep(TrangThai):
     ten_khoa_luan = models.CharField(max_length=200)
     ty_le_dao_van = models.FloatField()
     diem_tong = models.FloatField(null=True, blank=True)
-    mssv = models.ForeignKey(SinhVien, on_delete=models.CASCADE)
+    mssv = models.ManyToManyField(SinhVien)
+    hdbvkl = models.ForeignKey("HoiDongBVKL",on_delete=models.PROTECT, null=True)
     # tieu_chis = models.ManyToManyField("TieuChi", related_name='kltns')
-
-    class Meta:
-        unique_together=('id','mssv')
 
     def __str__(self):
         return self.ten_khoa_luan
@@ -100,6 +98,8 @@ class KLTNGVHuongDan(BaseModel):
     kltn = models.ForeignKey(KhoaLuanTotNghiep, on_delete=models.CASCADE)
     gv_huong_dan = models.ManyToManyField(GiangVien, blank=True)
 
+    def __str__(self):
+        return f"{self.pk} {self.kltn}"
 
 class TieuChi(BaseModel):
     tieu_chi = models.CharField(max_length=200)
@@ -128,5 +128,14 @@ class Diem(BaseModel):
 
     class Meta:
         unique_together=('tieu_chi','gv','kltn')
+
+
+class ActionLog(models.Model):
+    user = models.ForeignKey(NguoiDung, on_delete=models.CASCADE)
+    action = models.CharField(max_length=100)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.action} - {self.timestamp}'
 
 

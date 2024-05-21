@@ -17,6 +17,7 @@ r.register("giao_vu", views.GiaoVuViewSet, "giao_vu")
 r.register("KLTN", views.KLTNViewSet, "KLTN")
 r.register("HDBVKL", views.HDBVKLViewSet, "HDBVKL")
 r.register("Diem", views.DiemViewSet, "Diem")
+r.register("TieuChi", views.TieuChiViewSet, "TieuChi")
 r.register("KLTNDetails", views.KLTNDetailsViewSet, "KLTNDetails")
 
 urlpatterns = [
