@@ -108,7 +108,7 @@ class GiaoVuViewSet(viewsets.ViewSet, generics.CreateAPIView):
 class KLTNViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView):
     queryset = KhoaLuanTotNghiep.objects.all()  # filter(trang_thai=True)
     serializer_class = KLTNSerializer
-    # permission_classes = [my_permission.KLTNPermissionUser]
+    permission_classes = [my_permission.KLTNPermissionUser]
 
     @action(methods=["patch"], detail=True)
     def change_thesis_status(self, request, *args, **kwargs):
@@ -235,14 +235,20 @@ class DiemViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
     @action(methods=["get"], detail=True)
     def export_pdf(self, request, **kwargs):
         queryset = Diem.objects.filter(kltn=kwargs.get("pk"))
+        # thesis_name = KhoaLuanTotNghiep.objects.filter(id=kwargs.get("pk")).first().ten_khoa_luan
         thesis_name = KhoaLuanTotNghiep.objects.filter(id=kwargs.get("pk")).first().ten_khoa_luan
         data = self.get_serializer(queryset, many=True).data
         if request.user.is_authenticated:
-            export_pdf(data, thesis_name, request.user.email)
+            export_pdf(data, thesis_name, [request.user.email, "2151050191khanh@ou.edu.vn"])
         else:
-            export_pdf(data, thesis_name, "2151050191khanh@ou.edu.vn")
+            export_pdf(data, thesis_name, ["2151050191khanh@ou.edu.vn"])
 
         return Response(f"Export successfully to {request.user.email if request.user.is_authenticated else request.user}!", status.HTTP_200_OK)
+
+    @action(methods=["get"], detail=True)
+    def calculate_current_score(self, request, **kwargs):
+        print(calculate_average_score(kwargs.get("pk")))
+        return Response(calculate_average_score(kwargs.get("pk")))
 
     # @action(methods=["get"], detail=True)
     # def get_avg_score(self, request, **kwargs):
@@ -280,7 +286,7 @@ def calculate_average_score(pk):
 class KLTNDetailsViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = KhoaLuanTotNghiep.objects.all()
     serializer_class = KLTNDetailsSerializer
-    # permission_classes = [my_permission.KLTNPermissionUser]
+    permission_classes = [my_permission.KLTNPermissionUser]
 
     @action(methods=["get"], detail=True)
     def get_thesis_details(self, request, **kwargs):
