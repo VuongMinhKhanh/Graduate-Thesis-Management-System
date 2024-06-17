@@ -15,7 +15,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
 
 
-def export_pdf(data, thesis_name, email=""):
+def export_pdf(data, thesis_name, emails=None):
     # Create a file-like buffer to receive PDF data.
     buffer = io.BytesIO()
 
@@ -119,7 +119,7 @@ def export_pdf(data, thesis_name, email=""):
         f.write(buffer.getvalue())
 
     # Save PDF to a file and/or send by email
-    if email:
+    if emails:
         # Send an email
         email_subject = 'Thesis Evaluation Report'
         email_body = f'Please find attached the evaluation report for: {thesis_name}.'
@@ -127,7 +127,7 @@ def export_pdf(data, thesis_name, email=""):
             email_subject,
             email_body,
             settings.EMAIL_HOST_USER,  # Specify the sender email here
-            [email],
+            emails,
             [],
             # reply_to=['other@example.com'],
             # headers={'Message-ID': 'foo'},

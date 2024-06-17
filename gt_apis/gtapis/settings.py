@@ -24,7 +24,8 @@ SECRET_KEY = 'django-insecure-puefaojq+qauej!=cu%q1w1n%3o42*dvzv1c!*a-ez@@7f%pby
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.0.100", "192.168.0.105", "192.168.1.13","127.0.0.1"]
+
+ALLOWED_HOSTS = ["192.168.0.100", "192.168.0.105", "192.168.1.13", "10.17.45.27", "127.0.0.1"]
 
 # Application definition
 
@@ -155,7 +156,8 @@ REST_FRAMEWORK = {
 
 CLIENT_ID = "NmvFSir1yfbpoN50RPkVrj4ihDQfHfANLxm2AK7i"
 CLIENT_SECRET = "QKKu0sRz0Nf05Jb6T0mxnZbJ5IcyeOq5X7PHYhDlr9yYM4oyrdnjrJw5fvzi1MAVP73TgMWQi8Ry5yaj3LudlrPxW1IUpWRRzSqf2ZYJ5yP9qki0KXuZFFkLMRQQVrwx"
-
+# CLIENT_ID = "kwmofpnZzJHhZvhlF7NJbW29sjZidzPPjDERyj3N"
+# CLIENT_SECRET = "RSmhV4kjUwjA6ZUTHn4ojUXfgPcMty7FZwryoMJ0ZJmTT77ktGDfV7DJXNTOU5cMlX9rGqpLaif3wLwKR7dyjM5VmtOQZ5V3CzQ3Zoxwpm0ORO8w7Q7WFwahFxFCdUqy"
 
 # SEND MAIL SETTINGS
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

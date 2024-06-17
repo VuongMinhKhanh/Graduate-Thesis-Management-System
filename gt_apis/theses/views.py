@@ -1,4 +1,5 @@
 import requests
+from django.conf.global_settings import DATE_FORMAT
 from django.db.models import Avg, Count, Q, Sum, F, FloatField
 from django.db.models.functions import ExtractYear, Round, Cast
 from rest_framework import viewsets, generics, status, permissions
@@ -131,6 +132,7 @@ class KLTNViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView
                 kltn.save()
 
                 data = self.get_serializer(kltn).data
+                print(data)
                 send_mail.send_mail_for_thesis(data)
                 # print(some_view(data))
 
@@ -152,7 +154,7 @@ class KLTNViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView
 
         average_scores = (KhoaLuanTotNghiep.objects
                           .filter(diem_tong__isnull=False)
-                          .values("id", "ten_khoa_luan", "diem_tong", "created_date"))
+                          .values("id", "ten_khoa_luan", "diem_tong", "created_date", "created_date__year", "created_date__month", "created_date__day"))
 
         if year:
             average_scores = average_scores.filter(created_date__year=year)
@@ -379,14 +381,20 @@ class DiemViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
     @action(methods=["get"], detail=True)
     def export_pdf(self, request, **kwargs):
         queryset = Diem.objects.filter(kltn=kwargs.get("pk"))
+        # thesis_name = KhoaLuanTotNghiep.objects.filter(id=kwargs.get("pk")).first().ten_khoa_luan
         thesis_name = KhoaLuanTotNghiep.objects.filter(id=kwargs.get("pk")).first().ten_khoa_luan
         data = self.get_serializer(queryset, many=True).data
         if request.user.is_authenticated:
-            export_pdf(data, thesis_name, request.user.email)
+            export_pdf(data, thesis_name, [request.user.email, "2151050191khanh@ou.edu.vn"])
         else:
-            export_pdf(data, thesis_name, "2151050191khanh@ou.edu.vn")
+            export_pdf(data, thesis_name, ["2151050191khanh@ou.edu.vn"])
 
         return Response(f"Export successfully to {request.user.email if request.user.is_authenticated else request.user}!", status.HTTP_200_OK)
+
+    @action(methods=["get"], detail=True)
+    def calculate_current_score(self, request, **kwargs):
+        print(calculate_average_score(kwargs.get("pk")))
+        return Response(calculate_average_score(kwargs.get("pk")))
 
     # @action(methods=["get"], detail=True)
     # def get_avg_score(self, request, **kwargs):
@@ -531,7 +539,7 @@ def calculate_average_score(pk):
 class KLTNDetailsViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = KhoaLuanTotNghiep.objects.all()
     serializer_class = KLTNDetailsSerializer
-    # permission_classes = [my_permission.KLTNPermissionUser]
+    permission_classes = [my_permission.SinhVienPermissionUser]
 
     @action(methods=["get"], detail=True)
     def get_thesis_details(self, request, **kwargs):
