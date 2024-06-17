@@ -1,11 +1,11 @@
 import requests
+from django.conf.global_settings import DATE_FORMAT
 from django.db.models import Avg, Count, Q, Sum, F, FloatField
 from django.db.models.functions import ExtractYear, Round, Cast
 from rest_framework import viewsets, generics, status, permissions
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
-
 from theses.export_pdf import export_pdf
 from theses.models import KhoaLuanTotNghiep, HoiDongBVKL, NguoiDung, Diem, SinhVien, GiangVien, GiaoVu, NganhHoc
 from theses.serializers import KLTNSerializer, HDBVKLSerializer, NguoiDungSerializer, DiemSerializer, \
@@ -108,7 +108,7 @@ class GiaoVuViewSet(viewsets.ViewSet, generics.CreateAPIView):
 class KLTNViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView):
     queryset = KhoaLuanTotNghiep.objects.all()  # filter(trang_thai=True)
     serializer_class = KLTNSerializer
-    permission_classes = [my_permission.KLTNPermissionUser]
+    # permission_classes = [my_permission.KLTNPermissionUser]
 
     @action(methods=["patch"], detail=True)
     def change_thesis_status(self, request, *args, **kwargs):
@@ -132,6 +132,7 @@ class KLTNViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView
                 kltn.save()
 
                 data = self.get_serializer(kltn).data
+                print(data)
                 send_mail.send_mail_for_thesis(data)
                 # print(some_view(data))
 
@@ -153,7 +154,7 @@ class KLTNViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView
 
         average_scores = (KhoaLuanTotNghiep.objects
                           .filter(diem_tong__isnull=False)
-                          .values("id", "ten_khoa_luan", "diem_tong", "created_date"))
+                          .values("id", "ten_khoa_luan", "diem_tong", "created_date", "created_date__year", "created_date__month", "created_date__day"))
 
         if year:
             average_scores = average_scores.filter(created_date__year=year)
@@ -286,7 +287,7 @@ def calculate_average_score(pk):
 class KLTNDetailsViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = KhoaLuanTotNghiep.objects.all()
     serializer_class = KLTNDetailsSerializer
-    permission_classes = [my_permission.KLTNPermissionUser]
+    permission_classes = [my_permission.SinhVienPermissionUser]
 
     @action(methods=["get"], detail=True)
     def get_thesis_details(self, request, **kwargs):
