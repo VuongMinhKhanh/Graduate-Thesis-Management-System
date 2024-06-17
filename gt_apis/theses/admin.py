@@ -76,6 +76,7 @@ admin_site.register(GiangVien, name="Giảng Viên")
 admin_site.register(GiaoVu, name="Giáo Vụ")
 admin_site.register(KLTNGVHuongDan)
 admin_site.register(HoiDongBVKL)
+admin.site.register(ActionLog)
 
 
 # admin.site.register(Diem)  # Consider if special customization is needed

@@ -1,5 +1,6 @@
 from django.db.models import Q
 from rest_framework import permissions
+from theses.models import GiangVien,GiaoVu
 
 from theses.models import SinhVien
 
@@ -24,3 +25,14 @@ class SinhVienPermissionUser(permissions.IsAuthenticated):
         else:
             # For non-"sinh_vien" users, keep the original permission logic
             return False
+
+class GiangVienPermissionUser(permissions.IsAuthenticated):
+    def has_permission(self, request, view):
+        return (super().has_permission(request, view) and
+                (GiangVien.objects.filter(id=request.user.id).exists() or request.user.is_superuser))
+
+
+class GiaoVuPermissionUser(permissions.IsAuthenticated):
+    def has_permission(self, request, view):
+        return (super().has_permission(request, view) and
+                (GiaoVu.objects.filter(id=request.user.id).exists() or request.user.is_superuser))

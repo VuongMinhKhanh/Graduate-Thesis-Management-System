@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from theses.models import NguoiDung, KhoaLuanTotNghiep, HoiDongBVKL, SinhVien, GiangVien, KLTNGVHuongDan, Diem, TieuChi, \
-    GiaoVu, Lop, NganhHoc
+from theses.models import *
 
 
 class NguoiDungSerializer(serializers.ModelSerializer):
@@ -75,11 +74,10 @@ class GiaoVuSerializer(NguoiDungSerializer):
 
 
 class HDBVKLSerializer(ModelSerializer):
-    giang_viens = NguoiDungSerializer(many=True)
 
     class Meta:
         model = HoiDongBVKL
-        fields = ["giang_viens"]
+        fields = "__all__"
 
 
 class NganhHocSerializer(ModelSerializer):
@@ -97,8 +95,7 @@ class GVHuongDanSerializer(ModelSerializer):
 
 
 class KLTNSerializer(ModelSerializer):
-    mssv = SinhVienSerializer()
-
+    mssv = SinhVienSerializer(many=True)
     class Meta:
         model = KhoaLuanTotNghiep
         fields = [
@@ -109,7 +106,16 @@ class KLTNSerializer(ModelSerializer):
             'diem_tong',
             'trang_thai',
             'mssv',
+            'hdbvkl',
         ]
+
+
+class KLTNGVHuongDanSerializer(ModelSerializer):
+    kltn = KLTNSerializer()
+    gv_huong_dan = GiangVienSerializer(many=True)
+    class Meta:
+        model = KLTNGVHuongDan
+        fields = ["kltn","gv_huong_dan"]
 
 
 class KLTNDetailsSerializer(KLTNSerializer):
